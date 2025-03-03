@@ -1,0 +1,102 @@
+
+<head>
+	<script src='two.min.js'></script>
+	<script src='script.js'></script>
+	<!--<script src="//cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"></script>-->
+	<link href="mvp.css" rel="stylesheet" type="text/css">
+	<link href="style.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+
+    <table style="table-layout:fixed;overflow:hidden">
+        <tr>
+            <td style="vertical-align: top;">
+                <div id='myDiv' style="display: none"></div>
+            </td>
+            <td style="display: block; margin-top: 50px; margin-left: 50px;">
+                <img src="mallob-logo.jpg" style="width:80%; max-width:600px; margin-bottom:10em;"/>
+                <p id="explanation" style="font-weight: bold;">Pick a scenario to replay.</p>
+                <select id="dropdownScenario">
+                    <option>Scheduling with prefix sums</option>
+                    <option>Oscillating jobs (old)</option>  
+                    <option>1600x1 400 Jobs</option>  
+                    <option>Mallotane x587</option>  
+                    <option>Custom (file name: "loadevents")</option>  
+                </select><br/>
+                <button id="buttonStart" onclick="onStartPauseResume();">Load</button><br/><br/>
+                <div id="controlpanel" style="display: none">
+                    Replay speed (negative to go backwards): <input id='inputReplayspeed' type="number" step="any" min="-128" max="128" value="1.0"
+                        onchange = "onReplaySpeedChange();" />
+                    <br/>
+                    Jump to a certain time (s): 
+                    <div id="slidecontainer" style="display: table; vertical-align: middle;">
+                        <input id='inputReplayslideMin' style="width: 6em; display: table-cell; margin: 0" type="number" step="any" min="0.0" value="0.0"
+                            onchange   = "onReplaySpotChange();" /> 
+                        &nbsp;
+                        <input id="inputReplayslider" style="display: table-cell; margin: 0" type="range" min="0" max="100" value="0" class="slider"
+                            onchange = "onReplaySpotChange();"
+                            oninput = "this.onchange();"/>
+                        &nbsp;
+                        <input id='inputReplayslideMax' style="width: 6em; display: table-cell; margin: 0" type="number" step="any" min="0.0" value="60.0"
+                            onchange   = "onReplaySpotChange();" />
+                    </div>
+                    <br/><br/>
+                    Elapsed seconds:&nbsp;&nbsp;<b id='timedisplay'>0.00</b><br/>
+                    Number of active jobs: <b id='activejobsdisplay'>0</b><br/>
+                    Number of exited jobs: <b id='exitedjobsdisplay'>0</b><br/>
+                    System load: <b id='busynodesdisplay'>0</b>/<b id='numnodesdisplay'>0</b> (<b id="systemloaddisplay">0</b>%)
+                </div>
+            </td>
+        </tr>
+	</table>
+	
+	<label id='tooltip'><div id='tooltiptext'></div><div id='tooltipcanvas'></div></label>
+	
+	<hr/>
+	
+	<main>
+        <section>
+            <header>
+                <h3>Explanation</h3>
+            </header>
+            <p>
+                <b>Select</b> one of the experiments which were previously run on a supercomputer.
+                Press <b>Start</b> to animate the experiment's load balancing in real time, and <b>Pause</b>/<b>Resume</b> to pause the animation or resume it.
+                Reload the page to select another experiment.
+                <br/>
+                Provide a different <b>replay speed</b> to accelerate or slow down the animation.
+                You can also provide a <b>negative replay speed</b> to invert the flow of time.
+                <br/><br/>
+                Each bubble is a <b>Processing Element (PE)</b>. All PEs are arranged within a rectangular grid.
+                Their ordering in this grid corresponds to their numbering within Mallob (and not to the physical arrangement of machines).
+                <br/>
+                The <b>color</b> of a PE (face color + border color) represents the job which the PE is currently associated with.
+                The <b>size</b> of a busy PE corresponds to its position within the job's <b>job tree</b>: The root node is the largest, and the larger the distance from the root node, the smaller the PEs are rendered.
+                <br/>
+                <b>Edges</b> between PEs denote a <b>direct relationship</b> within the job's job tree, i.e., a parent or a child relationship.
+                Note that these edges are added to the visualization only if <b>both</b> nodes, parent and child, have already adopted the job.
+                <br/>
+                If you <b>hover</b> over a busy PE, all PEs belonging to the same job are highlighted while all other are hidden. 
+                In addition, the PE's local environment within the job tree is highlighted.
+                Specifically, the direct path to the root node and the edges to all (transitive) children are highlighted while all other edges are hidden.
+                In addition, a tooltip displays the job's total volume (= number of active PEs) and the volume of the subtree rooted at the selected PE.
+                <br/><br/>
+                The information on the right side contains the current point in time, the number of jobs currently active, the number of jobs processed so far (solved or timeouted), and the ratio of busy PEs. (Our load balancing aims for a load of 95% in all included experiments.)
+                <br/><br/>
+                Internally, the script on this site reads a text file with the <b>load events</b> extracted from an experiment's log file.
+                A load event is a tuple of a time stamp, a PE, a load indicator (0 or 1), a job ID, and an index within the job tree.
+                The displayed visualization is then computed on the basis of these load events.
+            </p>
+            
+        </section>
+	</main>
+	
+	<hr/>
+	
+	<footer>
+        <p style="text-align: center">
+        &copy; Dominik Schreiber 2021 &nbsp; &bull; &nbsp; See <a href="https://github.com/domschrei/mallob">github.com/domschrei/mallob</a>
+        </p>
+	</footer>
+</body> 
