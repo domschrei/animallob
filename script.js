@@ -379,12 +379,17 @@ function getTooltipText() {
     return document.getElementById('tooltiptext');
 }
 
-function getRelWidthOfMiniNode(idxWithinLayer, layerSize, totalWidth) {
-    return 10 + ((idxWithinLayer+0.5) / layerSize) * totalWidth;
+function getRelWidthOfMiniNode(idxWithinLayer, layerSize, totalWidth, widthOffset) {
+    return (10 + ((idxWithinLayer+0.5) / layerSize) * totalWidth) + widthOffset;
 }
 function getRelHeightOfMiniNode(layer) {
     return 20 + 30 * layer;
 }
+
+function getWidthDifference(layerSize, totalWidth) {
+    // width difference between leftmost and rightmost node in a layer
+    return Math.abs(getRelWidthOfMiniNode(0, layerSize, totalWidth, 0) - getRelWidthOfMiniNode(layerSize-1, layerSize, totalWidth, 0));
+}    
 
 function updateTooltip(i) {
     if (i < 0 || hover.rank != i) return;
@@ -450,12 +455,27 @@ function updateTooltip(i) {
         }
     }
 
+    var maxLayerSize = layerSize;
+
     var layer = 0;
     var layerSize = 1;
     var layerIdx = 0;
     var nonemptyLayers = 0;
+
+    //const maxDepth = Math.floor(Math.log2(n));
+    //const maxLayerSize = 10 + 10 * Math.pow(2, maxDepth);
+    //if (getWidthDifference(maxLayerSize, wMax) > 800) {
+    if (wMax > 800) {
+        console.log("Warning: Tooltip width may be too small for the mini tree");
+        //widthOffset = (800 - getWidthDifference(maxLayerSize, wMax)) / 2;
+        widthOffset = (800 - wMax) / 2;
+        //console.log("Width offset:", widthOffset);
+    } else {
+        widthOffset = 0;
+    }
+
     for (var idx = 0; idx < Math.max(job.ranks.length, miniNodes.length); idx++) {
-        
+
         if (idx >= miniNodes.length) {
             if (idx > 0) {
                 miniLines[idx] = tttwo.makeLine(0, 0, 0, 0);
@@ -473,7 +493,7 @@ function updateTooltip(i) {
         if (idx < job.ranks.length && job.ranks[idx] >= 0) {
             
             var rank = job.ranks[idx];
-            var w = getRelWidthOfMiniNode(layerIdx, layerSize, wMax);
+            var w = getRelWidthOfMiniNode(layerIdx, layerSize, wMax, widthOffset);
             var h = getRelHeightOfMiniNode(layer);
             nonemptyLayers = layer;
 
@@ -487,7 +507,7 @@ function updateTooltip(i) {
             miniNodes[idx].translation.y = h;
             //miniNodes[idx].radius = 0.5 * Math.max(12 - 1.5*layer, 3);
             if (idx > 0) {
-                var wParent = getRelWidthOfMiniNode(Math.floor(layerIdx/2), layerSize/2, wMax);
+                var wParent = getRelWidthOfMiniNode(Math.floor(layerIdx/2), layerSize/2, wMax, widthOffset);
                 var hParent = getRelHeightOfMiniNode(layer-1);
                 miniLines[idx].stroke = job.fcolor;
                 var boldConnection = job.connections[idx] != 'undefined' 
@@ -639,6 +659,7 @@ function advance(ev, flowOfTime) {
                 fcolor: randomColor(),
                 scolor: randomColor(),
                 strokewidth: rng() * 8,
+                //strokewidth: 0,
                 ranks: new Array(),
                 connections: new Array()
             };
