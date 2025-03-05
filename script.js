@@ -131,23 +131,78 @@ function updateSlider() {
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-var seed = 195682952;
+// var seed = 195682952;
+// function rng() {
+//     seed = (seed*17) ^ 294867291;
+//     return (seed % 100000) * 0.00001;
+// }
+
+// function randomColor() {
+//   var r = 220;
+//   var g = 220;
+//   var b = 220;
+//   while (r+g+b > 400 || r+g+b < 200) {
+//     var r = Math.round(rng()*255);
+//     var g = Math.round(rng()*255);
+//     var b = Math.round(rng()*255);
+//   }
+//   var colstr = 'rgb(' + r + ',' + g + ',' + b + ')';
+//   return colstr;
+// }
+
+// Mulberry32 algorithm
 function rng() {
-    seed = (seed*17) ^ 294867291;
-    return (seed % 100000) * 0.00001;
+    seed += 0x6D2B79F5;
+    
+    var t = seed;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    
+    // Return a float between 0 and 1 
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
 }
 
+
 function randomColor() {
-  var r = 220;
-  var g = 220;
-  var b = 220;
-  while (r+g+b > 400 || r+g+b < 200) {
-    var r = Math.round(rng()*255);
-    var g = Math.round(rng()*255);
-    var b = Math.round(rng()*255);
-  }
-  var colstr = 'rgb(' + r + ',' + g + ',' + b + ')';
-  return colstr;
+    // Define gradient palettes - each with start and end colors
+    const palettes = [
+        //{start: [142, 202, 230], end: [33, 158, 188]},    // Blues
+        //{start: [255, 183, 77], end: [255, 111, 0]},      // Oranges
+        //{start: [129, 199, 132], end: [56, 142, 60]},     // Greens
+        //{start: [240, 98, 146], end: [194, 24, 91]},      // Pinks
+        //{start: [179, 157, 219], end: [123, 31, 162]},    // Purples
+        //{start: [255, 138, 128], end: [213, 0, 0]},       // Reds
+        //{start: [255, 241, 118], end: [251, 192, 45]}     // Yellows
+        //{start: [56, 189, 248], end: [6, 95, 170]},        // Azure: Light blue to deep blue
+        //{start: [251, 146, 60], end: [185, 28, 28]},       // Amber: Orange to deep red
+        //{start: [74, 222, 128], end: [5, 122, 85]},        // Emerald: Light green to forest green
+        //{start: [232, 121, 249], end: [126, 34, 206]},     // Fuchsia: Light purple to rich violet
+        // {start: [251, 191, 36], end: [194, 65, 12]},       // Amber: Yellow to burnt orange
+        // {start: [252, 165, 165], end: [220, 38, 38]},      // Rose: Light pink to deep red
+        // {start: [103, 232, 249], end: [79, 70, 229]},      // Cyan: Bright cyan to indigo
+        // {start: [45, 212, 191], end: [15, 118, 110]},      // Teal: Bright teal to deep teal
+        // {start: [216, 180, 254], end: [124, 58, 237]}      // Violet: Lavender to deep purple
+        {start: [44, 62, 80], end: [52, 73, 94]},     // #2C3E50 to #34495E (Dark blue)
+        {start: [231, 76, 60], end: [178, 190, 195]}, // #E74C3C to #B2BEC3 (Red to Gray)
+        {start: [44, 62, 80], end: [231, 76, 60]},    // #2C3E50 to #E74C3C (Dark blue to Red)
+        {start: [52, 73, 94], end: [236, 240, 241]}   // #34495E to #B2BEC3 (Dark to Gray)
+    ];
+    
+    
+    // Select a random palette
+    const paletteIndex = Math.abs(Math.floor(rng() * palettes.length)) % palettes.length;
+    const palette = palettes[paletteIndex];
+    
+    // Select a random position in the gradient (0 to 1)
+    const position = rng();
+    
+    // Interpolate between start and end colors
+    const r = Math.round(palette.start[0] + position * (palette.end[0] - palette.start[0]));
+    const g = Math.round(palette.start[1] + position * (palette.end[1] - palette.start[1]));
+    const b = Math.round(palette.start[2] + position * (palette.end[2] - palette.start[2]));
+    
+    var colstr = 'rgb(' + r + ',' + g + ',' + b + ')';
+    return colstr;
 }
 
 function readTextFileThenMain(file)
@@ -658,8 +713,8 @@ function advance(ev, flowOfTime) {
                 id: ev.jobid,
                 fcolor: randomColor(),
                 scolor: randomColor(),
-                strokewidth: rng() * 8,
-                //strokewidth: 0,
+                //strokewidth: rng() * 8,
+                strokewidth: 0,
                 ranks: new Array(),
                 connections: new Array()
             };
